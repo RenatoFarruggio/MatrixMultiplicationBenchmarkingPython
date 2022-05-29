@@ -5,17 +5,28 @@ import time
 
 def run_benchmarks(warmup_rounds, test_rounds, matrix_sizes) -> None:
     benchmarks = []
-    benchmarks.append(Benchmark.BenchmarkNumpy())
-    benchmarks.append(Benchmark.BenchmarkTensorflow())
-    benchmarks.append(Benchmark.BenchmarkPytorch())
+
+    sparse_or_dense_type = "sparse-dense"
+
+    if sparse_or_dense_type == "dense-dense":
+        benchmarks.append(Benchmark.BenchmarkNumpyDenseDense())
+        benchmarks.append(Benchmark.BenchmarkTensorflowDenseDense())
+        benchmarks.append(Benchmark.BenchmarkPytorchDenseDense())
+    elif sparse_or_dense_type == "sparse-dense":
+        benchmarks.append(Benchmark.BenchmarkTensorflowSparseDense())
+        benchmarks.append(Benchmark.BenchmarkPytorchSparseDense())
+    else:
+        print(f"ERROR: NO BENCHMARK TESTS FOR PARAMETER {sparse_or_dense_type}")
+
 
     for matrix_size in matrix_sizes:
         array_factory = ArrayFactory(matrix_size)
-        filename = "results-dense-" + str(matrix_size) + ".txt"
+        filename = "results-" + sparse_or_dense_type + "-" + str(matrix_size) + ".txt"
 
         with open(filename, "wt") as f:
             f.write(f"Size: {matrix_size}\n")
             f.write(f"Test rounds: {test_rounds}\n")
+            f.write(f"Matrix types: {sparse_or_dense_type}\n")
             f.write("\n")
 
         # Run Tests
@@ -26,12 +37,14 @@ def run_benchmarks(warmup_rounds, test_rounds, matrix_sizes) -> None:
 
             for current_round in range(warmup_rounds):
                 print(f"Warmup round {current_round + 1}/{ warmup_rounds}")
-                benchmark.set_matrices(array_factory.get_new_dense_array(), array_factory.get_new_dense_array())
+                benchmark.set_matrices(array_factory.get_new_sparse_array(),
+                                       array_factory.get_new_dense_array())
                 benchmark.multiply_matrices()
 
             for current_round in range(test_rounds):
                 print(f"[{matrix_size} | {method_name}] {current_round + 1}/{ test_rounds}...")
-                benchmark.set_matrices(array_factory.get_new_dense_array(), array_factory.get_new_dense_array())
+                benchmark.set_matrices(array_factory.get_new_sparse_array(),
+                                       array_factory.get_new_dense_array())
 
                 start = time.time_ns()
                 benchmark.multiply_matrices()
@@ -50,11 +63,12 @@ def run_benchmarks(warmup_rounds, test_rounds, matrix_sizes) -> None:
 
 if __name__ == '__main__':
 
-    warmup_rounds = 5
-    test_rounds = 10
+    warmup_rounds = 2
+    test_rounds = 4
     #matrix_sizes = [10, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
-    #                2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000]
-    matrix_sizes = [100]
+    #                2000, 3000, 4000, 5000, 6000, 7000, 8000]
+
+    matrix_sizes = [9000, 10000]
     run_benchmarks(warmup_rounds=warmup_rounds, test_rounds=test_rounds, matrix_sizes=matrix_sizes)
 
 
