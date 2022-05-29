@@ -11,7 +11,7 @@ def run_benchmarks(warmup_rounds, test_rounds, matrix_sizes) -> None:
 
     for matrix_size in matrix_sizes:
         array_factory = ArrayFactory(matrix_size)
-        filename = "results-" + str(matrix_size) + ".txt"
+        filename = "results-dense-" + str(matrix_size) + ".txt"
 
         with open(filename, "wt") as f:
             f.write(f"Size: {matrix_size}\n")
@@ -26,12 +26,12 @@ def run_benchmarks(warmup_rounds, test_rounds, matrix_sizes) -> None:
 
             for current_round in range(warmup_rounds):
                 print(f"Warmup round {current_round + 1}/{ warmup_rounds}")
-                benchmark.set_matrices(array_factory.get_new_array(), array_factory.get_new_array())
+                benchmark.set_matrices(array_factory.get_new_dense_array(), array_factory.get_new_dense_array())
                 benchmark.multiply_matrices()
 
             for current_round in range(test_rounds):
                 print(f"[{matrix_size} | {method_name}] {current_round + 1}/{ test_rounds}...")
-                benchmark.set_matrices(array_factory.get_new_array(), array_factory.get_new_array())
+                benchmark.set_matrices(array_factory.get_new_dense_array(), array_factory.get_new_dense_array())
 
                 start = time.time_ns()
                 benchmark.multiply_matrices()
